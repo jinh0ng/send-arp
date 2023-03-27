@@ -3,13 +3,7 @@
 # 과제
 Sender(Victim)의 ARP table을 변조하라.
 
-# 실행
-
-syntax : send-arp <interface> <sender ip> <target ip> [<sender ip 2> <target ip 2> ...]
-sample : send-arp wlan0 192.168.10.2 192.168.10.1
-
-  
-  
+# 상세
 Sender는 보통 Victim이라고도 함.
   
 Target은 일반적으로 gateway임.
@@ -37,3 +31,10 @@ Victim(Sender)은 자신의 스마트폰 혹은 여분의 PC나 노트북으로 
 패킷을 전송(pcap_sendpacket)만 할 때에는 "pcap_open_live(dev, 0, 0, 0, errbuf)" 이렇게 줘도 되지만, 패킷을 수신(pcap_next_ex)을 하려면 숫자 인자를 0으로 채워서는 안됨. 과제를 수행할 때 "pcap_open_live(dev, BUFSIZ, 1, 1, errbuf)"로 수정해서 작업을 할 것.
 
 구조체는 libnet에 있는 헤더와 send-arp-test에 있는 헤더를 섞어서 사용하지 않는다(libnet 구조체만 사용하거나 send-arp-test에 있는 구조체만 사용하거나, 아니면 자신이 만든 구조체를 사용하거나).
+
+
+
+# 실행
+
+syntax : send-arp <interface> <sender ip> <target ip> [<sender ip 2> <target ip 2> ...]
+sample : send-arp wlan0 192.168.10.2 192.168.10.1
