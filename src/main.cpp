@@ -129,18 +129,21 @@ int main(int argc, char* argv[]) {
 		cout << "target	Ip	: " << string(targetIp) << endl;
 		
 		//getSenderMac
-		sendArp(handle, Mac("FF:FF:FF:FF:FF:FF"), senderMac, myMac, myIp, Mac    ("00:00:00:00:00:00"), senderIp, 1);
+		//sendArp(handle, Mac("FF:FF:FF:FF:FF:FF"), senderMac, myMac, myIp, Mac("00:00:00:00:00:00"), senderIp, 1);
+		sendArp(handle, Mac("FF:FF:FF:FF:FF:FF"), myMac, myMac, myIp, Mac("00:00:00:00:00:00"), senderIp, 1);
 		struct pcap_pkthdr* header;
 		const u_char* replyPacket;
 		
 		while(1){
+			int num = 1;
+			printf("%d\n", num++);
 			int res = pcap_next_ex(handle, &header, &replyPacket);
 			//if (res != 1) break; // return 1 when there's no problem.
 			if (res == 0)
-				return 0;
+				continue;
 			if (res == PCAP_ERROR || res == PCAP_ERROR_BREAK){
 				printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(handle));
-				return 0;
+				continue;
 			}
 			EthArpPacket* resPacket = (EthArpPacket *)replyPacket;
 			if (resPacket->arp_.sip() == senderIp && resPacket->arp_.tip() == myIp && resPacket->arp_.op() == ArpHdr::Reply && resPacket->eth_.type() == EthHdr::Arp ){
