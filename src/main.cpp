@@ -135,8 +135,8 @@ int main(int argc, char* argv[]) {
 		const u_char* replyPacket;
 		
 		while(1){
-			int num = 1;
-			printf("%d\n", num++);
+			//int num = 1;
+			//printf("%d\n", num++);
 			int res = pcap_next_ex(handle, &header, &replyPacket);
 			//if (res != 1) break; // return 1 when there's no problem.
 			if (res == 0)
