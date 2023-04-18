@@ -129,7 +129,6 @@ int main(int argc, char* argv[]) {
 		cout << "target	Ip	: " << string(targetIp) << endl;
 		
 		//getSenderMac
-		//sendArp(handle, Mac("FF:FF:FF:FF:FF:FF"), senderMac, myMac, myIp, Mac("00:00:00:00:00:00"), senderIp, 1);
 		sendArp(handle, Mac("FF:FF:FF:FF:FF:FF"), myMac, myMac, myIp, Mac("00:00:00:00:00:00"), senderIp, 1);
 		struct pcap_pkthdr* header;
 		const u_char* replyPacket;
