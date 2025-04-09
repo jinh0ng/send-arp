@@ -5,7 +5,6 @@
 #include <arpa/inet.h>
 #include "send-arp.h"
 
-// 사용법 출력 함수 (main과 함께 포함)
 void usage()
 {
     printf("syntax : send-arp <interface> <sender ip> <target ip> "
@@ -15,25 +14,23 @@ void usage()
 
 int main(int argc, char *argv[])
 {
-    // 인자 검사: 최소 4개 이상, (argc - 2)가 짝수여야 함.
     if (argc < 4 || ((argc - 2) % 2) != 0)
     {
         usage();
         return EXIT_FAILURE;
     }
 
-    // 공격자의 MAC, IP 정보 조회
+    // Attacker의 MAC, IP 정보 조회
     s_MacAddress attackerMac = getMacAddress(argv[1]);
     uint32_t attackerIp = getIpAddress(argv[1]);
 
-    // 공격자 MAC 주소를 C 문자열로 변환
     char attackerMacStr[18] = "";
     macToStrC(&attackerMac, attackerMacStr, sizeof(attackerMacStr));
 
     int pairCount = (argc - 2) / 2;
     for (int i = 0; i < pairCount; i++)
     {
-        // 인자 순서: sender IP, target IP
+
         const char *senderIp = argv[2 + i * 2];
         const char *targetIp = argv[3 + i * 2];
 
@@ -42,7 +39,7 @@ int main(int argc, char *argv[])
         if (handle == NULL)
             return EXIT_FAILURE;
 
-        // ARP 요청 패킷 생성 및 전송
+        // send ARP request packet
         EthArpPacket arpRequest = createArpRequest(attackerMacStr, attackerIp, senderIp);
         if (pcap_sendpacket(handle, reinterpret_cast<const u_char *>(&arpRequest),
                             sizeof(EthArpPacket)) != 0)
@@ -52,7 +49,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        // ARP 응답 대기
+        // ARP reply 대기
         EthArpPacket arpReply;
         if (!waitForArpReply(handle, arpRequest, arpReply))
         {
