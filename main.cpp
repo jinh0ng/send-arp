@@ -3,6 +3,10 @@
 #include <cstring>
 #include <pcap.h>
 #include <arpa/inet.h>
+#include "ethhdr.h"
+#include "arphdr.h"
+#include "mac.h"
+#include "ip.h"
 #include "send-arp.h"
 
 void usage()
