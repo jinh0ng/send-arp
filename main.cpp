@@ -3,6 +3,15 @@
 #include "ethhdr.h"
 #include "arphdr.h"
 
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <netinet/if_ether.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+
 #pragma pack(push, 1)
 struct EthArpPacket final
 {
@@ -17,9 +26,43 @@ void usage()
 	printf("sample : send-arp wlan0 192.168.10.2 192.168.10.1\n");
 }
 
+////////get MAC and IP of Attacker///////////
+struct s_Mac
+{
+	uint8_t mac[6];
+};
+
+s_Mac get_mac(char *dev)
+{
+	int sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock < 0)
+	{
+		perror("socket");
+		exit(1);
+	}
+	struct ifreq ifr;
+	memset(&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, dev, IFNAMSIZ - 1);
+	if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0)
+	{
+		perror("ioctl");
+		close(sock);
+		exit(1);
+	}
+	close(sock);
+
+	s_Mac mac;
+	memcpy(mac.addr, ifr.ifr_hwaddr.sa_data, 6);
+	return mac;
+}
+
 int main(int argc, char *argv[])
 {
-	if (argc != 2)
+	if (argc != 2 || argc < 4) // 인자가 최소 4개여야 함
+	{
+		usage();
+		return EXIT_FAILURE;
+	}
 	{
 		usage();
 		return EXIT_FAILURE;
